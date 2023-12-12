@@ -378,5 +378,6 @@ class Ollama:
             for key in additional_options
             if key in allowed_options
         }
-        parameters = {"model": model, "prompt": prompt, "options": validated_options}
+        parameters = {"model": model, "prompt": prompt,
+                      "options": validated_options}
         return self._post_request(endpoint, parameters)

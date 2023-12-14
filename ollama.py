@@ -3,8 +3,8 @@ import os
 
 # Ollama API Docs: <https://github.com/jmorganca/ollama/blob/main/docs/api.md>
 # All durations are returned in nanoseconds.
-# Compatible with ollama >=v0.1.14
-# Covers all endpoints as of ollama v0.1.14
+# Compatible with ollama >=v0.1.15
+# Covers all endpoints as of ollama v0.1.15
 
 # TODO: Implement tests for all endpoints.
 # TODO: Implement error handling for all endpoints.
@@ -84,6 +84,7 @@ class Ollama:
         self,
         model,
         prompt,
+        images=None,
         format="json",
         options=None,
         system=None,
@@ -98,6 +99,7 @@ class Ollama:
         Args:
         - model (str): The name of the model.
         - prompt (str): The input prompt for text generation.
+        - images (list): A list of base64-encoded images for multimodal models.
         - format (str): The format of the output. Default is 'json'.
         - options (dict): Additional options for the generation process.
         - system (str): System prompt (Overrides Modelfile).
@@ -160,6 +162,10 @@ class Ollama:
             "stream": stream,
             "raw": raw,
         }
+
+        if images:
+            parameters["images"] = images
+
         return self._post_request(endpoint, parameters)
 
     def generate_chat_completion(
@@ -172,15 +178,16 @@ class Ollama:
         stream=True,
     ):
         """
-        Generate chat completion using the specified model.
+        Generate the next message in a chat with a provided model.
 
         Args:
         - model (str): The name of the model.
         - messages (list): List of chat messages, this can be used to keep a chat memory.
-        - format (str): The format of the output. Default is 'json'.
-        - options (dict): Additional options for the generation process.
-        - template (str): The full prompt or prompt template (Overrides Modelfile).
-        - stream (bool): Whether to stream the response.
+          Each message should be a dictionary with keys 'role', 'content', and 'images' (optional).
+        - format (str): The format of the output. Currently, the only accepted value is 'json'.
+        - options (dict): Additional model parameters listed in the documentation for the Modelfile.
+        - template (str): The full prompt or prompt template (overrides what is defined in the Modelfile).
+        - stream (bool): If False, the response will be returned as a single response object, rather than a stream of objects.
 
         Returns:
         Tuple[int, requests.Response]: HTTP status code and the response object.
@@ -359,46 +366,45 @@ class Ollama:
             return response.status_code, response.json()
 
     def generate_embeddings(self, model, prompt, additional_options=None):
-    """
-    Generate embeddings from a model.
+        """
+        Generate embeddings from a model.
 
-    Parameters:
-    - model (str): The name of the model.
-    - prompt (str): Text to generate embeddings for.
-    - additional_options (dict): Additional model parameters.
+        Parameters:
+        - model (str): The name of the model.
+        - prompt (str): Text to generate embeddings for.
+        - additional_options (dict): Additional model parameters.
 
-    Returns:
-    Tuple[int, Union[requests.Response, None]]: Status code and response.
-    """
-    endpoint = "embeddings"
-    additional_options = additional_options or {}
+        Returns:
+        Tuple[int, Union[requests.Response, None]]: Status code and response.
+        """
+        endpoint = "embeddings"
+        additional_options = additional_options or {}
 
-    allowed_options = [
-        "mirostat",
-        "mirostat_eta",
-        "mirostat_tau",
-        "num_ctx",
-        "num_gqa",
-        "num_gpu",
-        "num_thread",
-        "repeat_last_n",
-        "repeat_penalty",
-        "temperature",
-        "seed",
-        "stop",
-        "tfs_z",
-        "num_predict",
-        "top_k",
-        "top_p",
-    ]
+        allowed_options = [
+            "mirostat",
+            "mirostat_eta",
+            "mirostat_tau",
+            "num_ctx",
+            "num_gqa",
+            "num_gpu",
+            "num_thread",
+            "repeat_last_n",
+            "repeat_penalty",
+            "temperature",
+            "seed",
+            "stop",
+            "tfs_z",
+            "num_predict",
+            "top_k",
+            "top_p",
+        ]
 
-    allowed_options += additional_options.keys()
-    validated_options = {
-        key: additional_options[key]
-        for key in additional_options
-        if key in allowed_options
-    }
+        allowed_options += additional_options.keys()
+        validated_options = {
+            key: additional_options[key]
+            for key in additional_options
+            if key in allowed_options
+        }
 
-    parameters = {"model": model, "prompt": prompt, "options": validated_options}
-    return self._post_request(endpoint, parameters)
-
+        parameters = {"model": model, "prompt": prompt, "options": validated_options}
+        return self._post_request(endpoint, parameters)

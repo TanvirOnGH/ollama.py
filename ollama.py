@@ -359,24 +359,46 @@ class Ollama:
             return response.status_code, response.json()
 
     def generate_embeddings(self, model, prompt, additional_options=None):
-        """
-        Generate embeddings from a model.
+    """
+    Generate embeddings from a model.
 
-        Parameters:
-        - model (str): The name of the model.
-        - prompt (str): Text to generate embeddings for.
-        - additional_options (dict): Additional model parameters.
+    Parameters:
+    - model (str): The name of the model.
+    - prompt (str): Text to generate embeddings for.
+    - additional_options (dict): Additional model parameters.
 
-        Returns:
-        Tuple[int, Union[requests.Response, None]]: Status code and response.
-        """
-        endpoint = "embeddings"
-        additional_options = additional_options or {}
-        allowed_options = []
-        validated_options = {
-            key: additional_options[key]
-            for key in additional_options
-            if key in allowed_options
-        }
-        parameters = {"model": model, "prompt": prompt, "options": validated_options}
-        return self._post_request(endpoint, parameters)
+    Returns:
+    Tuple[int, Union[requests.Response, None]]: Status code and response.
+    """
+    endpoint = "embeddings"
+    additional_options = additional_options or {}
+
+    allowed_options = [
+        "mirostat",
+        "mirostat_eta",
+        "mirostat_tau",
+        "num_ctx",
+        "num_gqa",
+        "num_gpu",
+        "num_thread",
+        "repeat_last_n",
+        "repeat_penalty",
+        "temperature",
+        "seed",
+        "stop",
+        "tfs_z",
+        "num_predict",
+        "top_k",
+        "top_p",
+    ]
+
+    allowed_options += additional_options.keys()
+    validated_options = {
+        key: additional_options[key]
+        for key in additional_options
+        if key in allowed_options
+    }
+
+    parameters = {"model": model, "prompt": prompt, "options": validated_options}
+    return self._post_request(endpoint, parameters)
+

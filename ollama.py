@@ -1,6 +1,11 @@
 import requests
 import os
 
+'''
+DEPRECATION NOTICE
+The project has been deprecated in favor of the official Python client library: https://github.com/ollama/ollama-python
+'''
+
 # Ollama API Docs: <https://github.com/jmorganca/ollama/blob/main/docs/api.md>
 # All durations are returned in nanoseconds.
 # Compatible with ollama >=v0.1.15
